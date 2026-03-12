@@ -1,9 +1,8 @@
-import { Schema, model, models, Types } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IExpense {
-  _id: Types.ObjectId;
-  user: Types.ObjectId;
-  card?: Types.ObjectId;
+export interface IExpense extends Document {
+  user: mongoose.Types.ObjectId;
+  card?: mongoose.Types.ObjectId;
   amount: number;
   date: Date;
   description: string;
@@ -14,20 +13,17 @@ export interface IExpense {
   paymentSource: 'cash' | 'checking' | 'card';
 }
 
-const expenseSchema = new Schema<IExpense>(
-  {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    card: { type: Schema.Types.ObjectId, ref: 'Card' },
-    amount: { type: Number, required: true, min: 0 },
-    date: { type: Date, required: true, index: true },
-    description: { type: String, required: true, trim: true },
-    category: { type: String, required: true, trim: true },
-    installments: { type: Number, default: 1, min: 1 },
-    installmentNumber: { type: Number, default: 1, min: 1 },
-    installmentId: { type: String, index: true },
-    paymentSource: { type: String, enum: ['cash', 'checking', 'card'], default: 'cash' },
-  },
-  { timestamps: true }
-);
+const expenseSchema = new Schema<IExpense>({
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  card: { type: Schema.Types.ObjectId, ref: 'Card' },  // Assuming a Card model exists
+  amount: { type: Number, required: true },
+  date: { type: Date, required: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  installments: { type: Number, required: true, default: 1 },
+  installmentNumber: { type: Number, required: true, default: 1 },
+  installmentId: { type: String },
+  paymentSource: { type: String, required: true, enum: ['cash', 'checking', 'card'], default: 'cash' },
+});
 
-export const Expense = models.Expense || model<IExpense>('Expense', expenseSchema);
+export const Expense = mongoose.model<IExpense>('Expense', expenseSchema);
