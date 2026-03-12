@@ -1,27 +1,19 @@
-import { Schema, model, models, Types } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IIncome {
-  _id: Types.ObjectId;
-  user: Types.ObjectId;
-  amount: number;
-  date: Date;
+export interface IIncome extends Document {
   description: string;
-  category: string;
-  installments: number;
-  installmentId?: string;
+  value: number;
+  type: string;
+  date: Date;
+  userId: mongoose.Types.ObjectId;
 }
 
-const incomeSchema = new Schema<IIncome>(
-  {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    amount: { type: Number, required: true, min: 0 },
-    date: { type: Date, required: true, index: true },
-    description: { type: String, required: true, trim: true },
-    category: { type: String, default: 'Outros', trim: true },
-    installments: { type: Number, default: 1, min: 1 },
-    installmentId: { type: String, index: true },
-  },
-  { timestamps: true }
-);
+const incomeSchema = new Schema<IIncome>({
+  description: { type: String, required: true },
+  value:       { type: Number, required: true },
+  type:        { type: String, required: true },
+  date:        { type: Date,   required: true },
+  userId:      { type: Schema.Types.ObjectId, ref: 'User', required: true },
+});
 
-export const Income = models.Income || model<IIncome>('Income', incomeSchema);
+export const Income = mongoose.model<IIncome>('Income', incomeSchema);
