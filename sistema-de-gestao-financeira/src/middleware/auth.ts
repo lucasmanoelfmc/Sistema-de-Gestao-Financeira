@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 
 export type JwtPayload = {
+  userId: string;
   sub: string;
-  email: string;
-  role: 'admin' | 'member';
+  iat: number;
+  exp: number;
 };
 
 export function verifyToken(token: string): JwtPayload {
@@ -15,3 +16,4 @@ export function verifyToken(token: string): JwtPayload {
 
   return jwt.verify(token, secret) as JwtPayload;
 }
+

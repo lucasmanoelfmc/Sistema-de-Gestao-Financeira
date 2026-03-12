@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { loginController } from '@/controllers/authController';
+import { loginController, registerController } from '@/controllers/authController';
+
+export async function registerRoute(req: NextRequest) {
+  await connectDB();
+  const { name, email, password } = await req.json();
+
+  try {
+    const result = await registerController(name, email, password);
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro ao registrar usuário.';
+    return NextResponse.json({ message }, { status: 400 });
+  }
+}
 
 export async function loginRoute(req: NextRequest) {
   await connectDB();
