@@ -91,3 +91,59 @@ export async function getMonthlyDashboardController({ month, year, userId }: Mon
     top5Expenses,
   };
 }
+
+export async function getFutureDebtsController(userId: string) {
+  if (!userId || !Types.ObjectId.isValid(userId)) {
+    throw new Error('Informe um userId válido.');
+  }
+
+  const now = new Date();
+
+  const [totalFutureDebtsAgg, dueByMonth] = await Promise.all([
+    Expense.aggregate([
+      {
+        $match: {
+          user: new Types.ObjectId(userId),
+          date: { $gt: now },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalFutureDebts: { $sum: '$amount' },
+        },
+      },
+    ]),
+    Expense.aggregate([
+      {
+        $match: {
+          user: new Types.ObjectId(userId),
+          date: { $gt: now },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$date' },
+            month: { $month: '$date' },
+          },
+          totalDue: { $sum: '$amount' },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          month: '$_id.month',
+          totalDue: 1,
+        },
+      },
+    ]),
+  ]);
+
+  return {
+    totalFutureDebts: totalFutureDebtsAgg[0]?.totalFutureDebts ?? 0,
+    dueByMonth,
+  };
+}
