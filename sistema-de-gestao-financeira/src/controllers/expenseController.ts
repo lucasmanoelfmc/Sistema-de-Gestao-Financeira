@@ -13,10 +13,18 @@ type CreateExpenseInput = {
   paymentSource?: 'cash' | 'checking' | 'card';
 };
 
+type UpdateExpenseInput = Partial<CreateExpenseInput>;
+
 function addMonths(baseDate: Date, monthsToAdd: number) {
   const result = new Date(baseDate);
   result.setMonth(result.getMonth() + monthsToAdd);
   return result;
+}
+
+function validateObjectId(id: string, fieldName: string) {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new Error(`${fieldName} inválido.`);
+  }
 }
 
 export async function createExpense(data: CreateExpenseInput) {
@@ -35,12 +43,10 @@ export async function createExpense(data: CreateExpenseInput) {
     throw new Error('Campos obrigatórios: user, amount, date, description, category.');
   }
 
-  if (!Types.ObjectId.isValid(user)) {
-    throw new Error('Usuário inválido.');
-  }
+  validateObjectId(user, 'Usuário');
 
-  if (card && !Types.ObjectId.isValid(card)) {
-    throw new Error('Cartão inválido.');
+  if (card) {
+    validateObjectId(card, 'Cartão');
   }
 
   if (amount < 0) {
@@ -71,10 +77,6 @@ export async function createExpense(data: CreateExpenseInput) {
     });
   }
 
-  // Lógica de parcelamento:
-  // 1) divide o valor em centavos pelo número de parcelas
-  // 2) distribui eventual resto na última parcela
-  // 3) cria registros para os meses seguintes
   const groupInstallmentId = randomUUID();
   const totalInCents = Math.round(amount * 100);
   const baseInstallmentInCents = Math.floor(totalInCents / installments);
@@ -100,4 +102,62 @@ export async function createExpense(data: CreateExpenseInput) {
   });
 
   return Expense.insertMany(installmentDocs);
+}
+
+export async function listExpensesByMonth(userId: string, year: number, month: number) {
+  validateObjectId(userId, 'userId');
+
+  if (!year || !month || month < 1 || month > 12) {
+    throw new Error('Informe ano e mês válidos.');
+  }
+
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
+
+  return Expense.find({
+    user: userId,
+    date: {
+      $gte: startDate,
+      $lt: endDate,
+    },
+  }).sort({ date: -1, createdAt: -1 });
+}
+
+export async function updateExpense(expenseId: string, userId: string, data: UpdateExpenseInput) {
+  validateObjectId(expenseId, 'expenseId');
+  validateObjectId(userId, 'userId');
+
+  const updateData: Record<string, unknown> = {};
+
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.amount !== undefined) updateData.amount = Number(data.amount);
+  if (data.category !== undefined) updateData.category = data.category;
+  if (data.date !== undefined) updateData.date = new Date(data.date);
+  if (data.paymentSource !== undefined) updateData.paymentSource = data.paymentSource;
+  if (data.card !== undefined) updateData.card = data.card || undefined;
+
+  const expense = await Expense.findOneAndUpdate(
+    { _id: expenseId, user: userId },
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+
+  if (!expense) {
+    throw new Error('Despesa não encontrada.');
+  }
+
+  return expense;
+}
+
+export async function deleteExpense(expenseId: string, userId: string) {
+  validateObjectId(expenseId, 'expenseId');
+  validateObjectId(userId, 'userId');
+
+  const deletedExpense = await Expense.findOneAndDelete({ _id: expenseId, user: userId });
+
+  if (!deletedExpense) {
+    throw new Error('Despesa não encontrada.');
+  }
+
+  return { message: 'Despesa removida com sucesso.' };
 }
