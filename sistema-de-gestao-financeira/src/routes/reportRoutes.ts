@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { getFutureDebtsController, getMonthlyDashboardController } from '@/controllers/reportController';
+import {
+  getAnnualReportController,
+  getFutureDebtsController,
+  getMonthlyDashboardController,
+} from '@/controllers/reportController';
 
 export async function getMonthlyDashboardRoute(req: NextRequest) {
   await connectDB();
@@ -30,6 +34,22 @@ export async function getFutureDebtsRoute(req: NextRequest) {
     return NextResponse.json(futureDebtsData, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro ao buscar dívidas futuras.';
+    return NextResponse.json({ message }, { status: 400 });
+  }
+}
+
+export async function getAnnualReportRoute(req: NextRequest) {
+  await connectDB();
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const year = Number(searchParams.get('year'));
+    const userId = searchParams.get('userId') || '';
+
+    const annualReportData = await getAnnualReportController(year, userId);
+    return NextResponse.json(annualReportData, { status: 200 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Erro ao buscar relatório anual.';
     return NextResponse.json({ message }, { status: 400 });
   }
 }

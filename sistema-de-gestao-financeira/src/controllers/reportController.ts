@@ -8,14 +8,18 @@ type MonthlyDashboardInput = {
   userId: string;
 };
 
+function validateUserId(userId: string) {
+  if (!userId || !Types.ObjectId.isValid(userId)) {
+    throw new Error('Informe um userId válido.');
+  }
+}
+
 export async function getMonthlyDashboardController({ month, year, userId }: MonthlyDashboardInput) {
   if (!month || !year || month < 1 || month > 12) {
     throw new Error('Informe month e year válidos.');
   }
 
-  if (!userId || !Types.ObjectId.isValid(userId)) {
-    throw new Error('Informe um userId válido.');
-  }
+  validateUserId(userId);
 
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 1);
@@ -93,9 +97,7 @@ export async function getMonthlyDashboardController({ month, year, userId }: Mon
 }
 
 export async function getFutureDebtsController(userId: string) {
-  if (!userId || !Types.ObjectId.isValid(userId)) {
-    throw new Error('Informe um userId válido.');
-  }
+  validateUserId(userId);
 
   const now = new Date();
 
@@ -145,5 +147,99 @@ export async function getFutureDebtsController(userId: string) {
   return {
     totalFutureDebts: totalFutureDebtsAgg[0]?.totalFutureDebts ?? 0,
     dueByMonth,
+  };
+}
+
+export async function getAnnualReportController(year: number, userId: string) {
+  if (!year) {
+    throw new Error('Informe um ano válido.');
+  }
+
+  validateUserId(userId);
+
+  const startDate = new Date(year, 0, 1);
+  const endDate = new Date(year + 1, 0, 1);
+
+  const [incomeAgg, expenseAgg, monthlyIncome, monthlyExpense] = await Promise.all([
+    Income.aggregate([
+      {
+        $match: {
+          userId: new Types.ObjectId(userId),
+          date: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalIncome: { $sum: '$value' },
+        },
+      },
+    ]),
+    Expense.aggregate([
+      {
+        $match: {
+          user: new Types.ObjectId(userId),
+          date: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalExpense: { $sum: '$amount' },
+        },
+      },
+    ]),
+    Income.aggregate([
+      {
+        $match: {
+          userId: new Types.ObjectId(userId),
+          date: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { month: { $month: '$date' } },
+          totalIncome: { $sum: '$value' },
+        },
+      },
+    ]),
+    Expense.aggregate([
+      {
+        $match: {
+          user: new Types.ObjectId(userId),
+          date: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { month: { $month: '$date' } },
+          totalExpense: { $sum: '$amount' },
+        },
+      },
+    ]),
+  ]);
+
+  const monthlyReport = Array.from({ length: 12 }, (_, index) => {
+    const month = index + 1;
+    const incomeMonth = monthlyIncome.find((item) => item._id.month === month)?.totalIncome ?? 0;
+    const expenseMonth = monthlyExpense.find((item) => item._id.month === month)?.totalExpense ?? 0;
+
+    return {
+      month,
+      totalIncome: incomeMonth,
+      totalExpense: expenseMonth,
+      balance: incomeMonth - expenseMonth,
+    };
+  });
+
+  const totalIncome = incomeAgg[0]?.totalIncome ?? 0;
+  const totalExpense = expenseAgg[0]?.totalExpense ?? 0;
+
+  return {
+    year,
+    totalIncome,
+    totalExpense,
+    balance: totalIncome - totalExpense,
+    monthlyReport,
   };
 }
