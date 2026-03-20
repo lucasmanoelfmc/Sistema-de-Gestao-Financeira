@@ -1,4 +1,5 @@
 import { Schema, model, models, Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 export interface IReserve {
   _id: Types.ObjectId;
@@ -22,4 +23,5 @@ const reserveSchema = new Schema<IReserve>(
   { timestamps: true }
 );
 
-export const Reserve = models.Reserve || model<IReserve>('Reserve', reserveSchema);
+export const Reserve: Model<IReserve> =
+  models.Reserve || model<IReserve>('Reserve', reserveSchema);
