@@ -1,31 +1,113 @@
-import Dashboard from '@/components/dashboard/Dashboard';
-import React from 'react';
+'use client';
 
-const mockData = {
-  totalIncome: 8500,
-  totalExpense: 5200,
-  balance: 3300,
-  expensesByCategory: [
-    { category: 'Moradia', total: 1800 },
-    { category: 'Alimentação', total: 1200 },
-    { category: 'Transporte', total: 700 },
-    { category: 'Lazer', total: 900 },
-    { category: 'Saúde', total: 600 },
-  ],
-  top5Expenses: [
-    { _id: '1', description: 'Aluguel', category: 'Moradia', amount: 1500, date: '2026-03-01' },
-    { _id: '2', description: 'Supermercado', category: 'Alimentação', amount: 850, date: '2026-03-07' },
-    { _id: '3', description: 'Parcela carro', category: 'Transporte', amount: 700, date: '2026-03-10' },
-    { _id: '4', description: 'Plano de saúde', category: 'Saúde', amount: 600, date: '2026-03-05' },
-    { _id: '5', description: 'Restaurantes', category: 'Lazer', amount: 500, date: '2026-03-08' },
-  ],
+import { useEffect, useMemo, useState } from 'react';
+import Dashboard, { DashboardData } from '@/components/dashboard/Dashboard';
+
+const EMPTY_DASHBOARD: DashboardData = {
+  totalIncome: 0,
+  totalExpense: 0,
+  balance: 0,
+  expensesByCategory: [],
+  top5Expenses: [],
 };
 
+const MONTH_LABELS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
 export default function DashboardPage() {
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [userId, setUserId] = useState('');
+  const [data, setData] = useState<DashboardData>(EMPTY_DASHBOARD);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const month = selectedDate.getMonth() + 1;
+  const year = selectedDate.getFullYear();
+
+  const monthLabel = useMemo(
+    () => `${MONTH_LABELS[selectedDate.getMonth()]} de ${selectedDate.getFullYear()}`,
+    [selectedDate]
+  );
+
+  async function loadDashboard(currentUserId: string, currentMonth: number, currentYear: number) {
+    if (!currentUserId) {
+      setData(EMPTY_DASHBOARD);
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(
+        `/api/reports/monthly?userId=${currentUserId}&month=${currentMonth}&year=${currentYear}`
+      );
+      const dashboardData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(dashboardData.message || 'Erro ao carregar dashboard.');
+      }
+
+      setData(dashboardData);
+    } catch (fetchError) {
+      const message = fetchError instanceof Error ? fetchError.message : 'Erro ao carregar dashboard.';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const savedUserId = localStorage.getItem('userId') || '';
+    setUserId(savedUserId);
+    void loadDashboard(savedUserId, month, year);
+  }, [month, year]);
+
+  function handlePreviousMonth() {
+    setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
+  }
+
+  function handleNextMonth() {
+    setSelectedDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
+  }
+
   return (
-    <main style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
-      <h1>Dashboard Financeiro</h1>
-      <Dashboard data={mockData} />
+    <main
+      style={{
+        padding: 24,
+        maxWidth: 1200,
+        margin: '0 auto',
+        display: 'grid',
+        gap: 16,
+        backgroundColor: '#f8fafc',
+      }}
+    >
+      <div style={{ display: 'grid', gap: 8 }}>
+        <label htmlFor="dashboard-user-id">User ID</label>
+        <input
+          id="dashboard-user-id"
+          value={userId}
+          onChange={(event) => setUserId(event.target.value)}
+          placeholder="Informe o userId"
+          style={{ padding: 12, borderRadius: 10, border: '1px solid #d1d5db', maxWidth: 360 }}
+        />
+        <button
+          type="button"
+          onClick={() => void loadDashboard(userId, month, year)}
+          style={{ width: 'fit-content', padding: '10px 14px', borderRadius: 10, border: 'none', backgroundColor: '#2563eb', color: '#fff' }}
+        >
+          Atualizar dashboard
+        </button>
+      </div>
+
+      {error ? <p style={{ color: '#c00' }}>{error}</p> : null}
+
+      <Dashboard
+        data={data}
+        monthLabel={monthLabel}
+        onPreviousMonth={handlePreviousMonth}
+        onNextMonth={handleNextMonth}
+        loading={loading}
+      />
     </main>
   );
 }
