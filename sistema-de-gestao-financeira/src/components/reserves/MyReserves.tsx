@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 import {
   CartesianGrid,
   Legend,
@@ -93,6 +94,17 @@ export default function MyReserves() {
       };
     });
   }, [items]);
+  const exportRows = useMemo(
+    () =>
+      items.map((item) => ({
+        data: new Date(item.date).toLocaleDateString('pt-BR'),
+        descricao: item.description,
+        categoria: item.category,
+        origem: item.source || '-',
+        valor: item.amount,
+      })),
+    [items]
+  );
 
   function updateField<K extends keyof ReserveFormState>(field: K, value: ReserveFormState[K]) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -169,7 +181,10 @@ export default function MyReserves() {
 
   return (
     <section style={{ display: 'grid', gap: 20 }}>
-      <h1>Minhas Reservas</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Minhas Reservas</h1>
+        <ExportDataButton fileBaseName="reservas" title="Exportação de Reservas" rows={exportRows} />
+      </header>
 
       <label htmlFor="reserve-user-id">User ID</label>
       <input

@@ -1,5 +1,6 @@
 'use client';
 
+import ExportDataButton from '@/components/export/ExportDataButton';
 import {
   Bar,
   BarChart,
@@ -59,6 +60,26 @@ export default function Dashboard({
   const barData = [
     { name: 'Resumo Mensal', renda: data.totalIncome, despesas: data.totalExpense },
   ];
+  const exportRows = [
+    {
+      secao: 'Resumo',
+      renda_total: data.totalIncome,
+      despesa_total: data.totalExpense,
+      saldo: data.balance,
+    },
+    ...data.expensesByCategory.map((item) => ({
+      secao: 'Despesas por categoria',
+      categoria: item.category,
+      total: item.total,
+    })),
+    ...data.top5Expenses.map((item) => ({
+      secao: 'Top 5 despesas',
+      descricao: item.description,
+      categoria: item.category,
+      valor: item.amount,
+      data: new Date(item.date).toLocaleDateString('pt-BR'),
+    })),
+  ];
 
   return (
     <section style={{ display: 'grid', gap: 20 }}>
@@ -76,7 +97,8 @@ export default function Dashboard({
           <p style={{ margin: '8px 0 0', color: '#6b7280' }}>{monthLabel}</p>
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <ExportDataButton fileBaseName="dashboard-financeiro" title={`Exportação ${monthLabel}`} rows={exportRows} />
           <button type="button" onClick={onPreviousMonth} style={navButtonStyle}>
             ← Mês anterior
           </button>

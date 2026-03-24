@@ -1,6 +1,7 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 
 type CardItem = {
   _id: string;
@@ -31,6 +32,16 @@ export default function CardsManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const exportRows = useMemo(
+    () =>
+      cards.map((card) => ({
+        nome: card.name,
+        tipo: card.type === 'credit' ? 'Crédito' : 'Débito',
+        titular: card.holderName,
+        ultimos_4_digitos: card.last4Digits,
+      })),
+    [cards]
+  );
 
   async function loadCards(currentUserId: string) {
     if (!currentUserId) {
@@ -137,7 +148,10 @@ export default function CardsManager() {
 
   return (
     <section style={{ display: 'grid', gap: 16 }}>
-      <h1>Gerenciar Cartões</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Gerenciar Cartões</h1>
+        <ExportDataButton fileBaseName="contas-cartoes" title="Exportação de Contas/Cartões" rows={exportRows} />
+      </header>
 
       <label htmlFor="cards-user-id">User ID</label>
       <input

@@ -1,6 +1,7 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 
 type CardItem = {
   _id: string;
@@ -44,6 +45,18 @@ export default function InstallmentsManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const exportRows = useMemo(
+    () =>
+      items.map((item) => ({
+        descricao: item.description,
+        cartao: `${item.card?.name || ''} (${item.card?.last4Digits || ''})`,
+        valor_total: item.totalAmount,
+        parcelas: item.installments,
+        valor_mensal: item.monthlyAmount.toFixed(2),
+        inicio: new Date(item.startDate).toLocaleDateString('pt-BR'),
+      })),
+    [items]
+  );
 
   async function loadCards(currentUserId: string) {
     if (!currentUserId) {
@@ -183,7 +196,10 @@ export default function InstallmentsManager() {
 
   return (
     <section style={{ display: 'grid', gap: 16 }}>
-      <h1>Gerenciar Parcelamentos</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Gerenciar Parcelamentos</h1>
+        <ExportDataButton fileBaseName="parcelamentos" title="Exportação de Parcelamentos" rows={exportRows} />
+      </header>
 
       <label htmlFor="installments-user-id">User ID</label>
       <input

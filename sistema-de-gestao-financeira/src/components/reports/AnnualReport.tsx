@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 import {
   Bar,
   BarChart,
@@ -82,10 +83,35 @@ export default function AnnualReport() {
       })),
     [data]
   );
+  const exportRows = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return [
+      {
+        tipo: 'Resumo anual',
+        ano: data.year,
+        renda_total: data.totalIncome,
+        despesa_total: data.totalExpense,
+        saldo_total: data.balance,
+      },
+      ...data.monthlyReport.map((item) => ({
+        tipo: 'Mês',
+        mes: MONTH_LABELS[item.month - 1],
+        renda: item.totalIncome,
+        despesas: item.totalExpense,
+        saldo: item.balance,
+      })),
+    ];
+  }, [data]);
 
   return (
     <section style={{ display: 'grid', gap: 20 }}>
-      <h1>Relatório Anual</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Relatório Anual</h1>
+        <ExportDataButton fileBaseName="relatorio-anual" title="Exportação do Relatório Anual" rows={exportRows} />
+      </header>
 
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(220px, 1fr))' }}>
         <div>

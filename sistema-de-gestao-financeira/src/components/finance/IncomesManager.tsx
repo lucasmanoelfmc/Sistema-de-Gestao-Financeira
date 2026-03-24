@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 
 type IncomeItem = {
   _id: string;
@@ -36,6 +37,16 @@ export default function IncomesManager() {
   const currentDate = useMemo(() => new Date(), []);
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
+  const exportRows = useMemo(
+    () =>
+      items.map((item) => ({
+        descricao: item.description,
+        valor: item.value,
+        tipo: item.type,
+        data: new Date(item.date).toLocaleDateString('pt-BR'),
+      })),
+    [items]
+  );
 
   async function loadIncomes(selectedUserId: string) {
     if (!selectedUserId) {
@@ -145,7 +156,10 @@ export default function IncomesManager() {
 
   return (
     <section style={{ display: 'grid', gap: 20 }}>
-      <h1>Gerenciar Rendas</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Gerenciar Rendas</h1>
+        <ExportDataButton fileBaseName="rendas" title="Exportação de Rendas" rows={exportRows} />
+      </header>
 
       <label htmlFor="income-user-id">User ID</label>
       <input

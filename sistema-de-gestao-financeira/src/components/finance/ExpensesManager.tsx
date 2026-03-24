@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import ExportDataButton from '@/components/export/ExportDataButton';
 
 type ExpenseItem = {
   _id: string;
@@ -42,6 +43,17 @@ export default function ExpensesManager() {
   const currentDate = useMemo(() => new Date(), []);
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
+  const exportRows = useMemo(
+    () =>
+      items.map((item) => ({
+        descricao: item.description,
+        valor: item.amount,
+        categoria: item.category,
+        data: new Date(item.date).toLocaleDateString('pt-BR'),
+        parcela: `${item.installmentNumber}/${item.installments}`,
+      })),
+    [items]
+  );
 
   async function loadExpenses(selectedUserId: string) {
     if (!selectedUserId) {
@@ -154,7 +166,10 @@ export default function ExpensesManager() {
 
   return (
     <section style={{ display: 'grid', gap: 20 }}>
-      <h1>Gerenciar Despesas</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ margin: 0 }}>Gerenciar Despesas</h1>
+        <ExportDataButton fileBaseName="despesas" title="Exportação de Despesas" rows={exportRows} />
+      </header>
 
       <label htmlFor="expense-user-id">User ID</label>
       <input
