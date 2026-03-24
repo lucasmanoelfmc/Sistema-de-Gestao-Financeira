@@ -1,7 +1,6 @@
-import { Schema, model, models, Types } from 'mongoose';
+import { Schema, model, models, Types, Model } from 'mongoose';
 
 export interface ICard {
-  _id: Types.ObjectId;
   user: Types.ObjectId;
   name: string;
   type: 'credit' | 'debit';
@@ -22,4 +21,5 @@ const cardSchema = new Schema<ICard>(
   { timestamps: true }
 );
 
-export const Card = models.Card || model<ICard>('Card', cardSchema);
+export const Card: Model<ICard> =
+  (models.Card as Model<ICard>) || model<ICard>('Card', cardSchema);
