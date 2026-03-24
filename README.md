@@ -6,7 +6,7 @@ Aplicação web desenvolvida em Next.js com o intuito de gerir e visualizar info
 ### Clone o repositório
 ```bash
 git clone https://github.com/lucasmanoelfmc/Sistema-de-Gestao-Financeira.git
-cd sistema-de-gestao-financeira
+cd Sistema-de-Gestao-Financeira
 ```
 
 ### Instale as dependências
