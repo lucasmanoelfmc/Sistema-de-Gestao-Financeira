@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { loginController, registerController } from '@/controllers/authController';
+import { log } from 'node:console';
 
 export async function registerRoute(req: NextRequest) {
   await connectDB();

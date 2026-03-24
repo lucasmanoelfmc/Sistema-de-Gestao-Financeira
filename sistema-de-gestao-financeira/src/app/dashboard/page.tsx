@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Dashboard, { DashboardData } from '@/components/dashboard/Dashboard';
+import AppTopbar from '@/components/layout/AppTopbar';
+
 
 const EMPTY_DASHBOARD: DashboardData = {
   totalIncome: 0,
@@ -81,6 +83,9 @@ export default function DashboardPage() {
         backgroundColor: '#f8fafc',
       }}
     >
+
+      <AppTopbar  />
+
       <div style={{ display: 'grid', gap: 8 }}>
         <label htmlFor="dashboard-user-id">User ID</label>
         <input

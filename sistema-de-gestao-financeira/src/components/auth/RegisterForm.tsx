@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type LoginResponse = {
-  token: string;
+type RegisterResponse = {
+  token?: string;
   user?: {
     id?: string;
     email?: string;
@@ -14,42 +14,42 @@ type LoginResponse = {
   message?: string;
 };
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
-      const data = (await response.json()) as LoginResponse;
+      const data = (await response.json()) as RegisterResponse;
 
-      if (!response.ok || !data.token) {
-        throw new Error(data.message || 'Falha no login.');
+      if (!response.ok) {
+        throw new Error(data.message || 'Falha ao registrar usuário.');
       }
 
-      localStorage.setItem('token', data.token);
-
-      if (data.user?.id) {
-        localStorage.setItem('userId', data.user.id);
-      }
-
-      router.replace('/dashboard');
+      setSuccess('Conta criada com sucesso. Redirecionando para login...');
+      setTimeout(() => {
+        router.replace('/login');
+      }, 900);
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : 'Erro ao fazer login.';
+      const message = submitError instanceof Error ? submitError.message : 'Erro ao registrar usuário.';
       setError(message);
     } finally {
       setLoading(false);
@@ -69,13 +69,26 @@ export default function LoginForm() {
       }}
     >
       <header style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>Login</h1>
+        <h1 style={{ margin: 0 }}>Criar conta</h1>
         <p style={{ margin: '8px 0 0', color: '#6b7280' }}>
-          Entre com seu email e senha para acessar o dashboard financeiro.
+          Preencha os dados para criar seu acesso ao sistema.
         </p>
       </header>
 
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
+        <div style={{ display: 'grid', gap: 6 }}>
+          <label htmlFor="name">Nome</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Seu nome"
+            required
+            style={{ padding: 12, borderRadius: 10, border: '1px solid #d1d5db' }}
+          />
+        </div>
+
         <div style={{ display: 'grid', gap: 6 }}>
           <label htmlFor="email">Email</label>
           <input
@@ -96,7 +109,7 @@ export default function LoginForm() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Digite sua senha"
+            placeholder="Crie uma senha"
             required
             style={{ padding: 12, borderRadius: 10, border: '1px solid #d1d5db' }}
           />
@@ -109,17 +122,17 @@ export default function LoginForm() {
             padding: 12,
             borderRadius: 10,
             border: 'none',
-            backgroundColor: '#2563eb',
+            backgroundColor: '#16a34a',
             color: '#fff',
             fontWeight: 600,
             cursor: loading ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'Entrando...' : 'Login'}
+          {loading ? 'Registrando...' : 'Registrar'}
         </button>
 
         <Link
-          href="/register"
+          href="/login"
           style={{
             display: 'inline-flex',
             justifyContent: 'center',
@@ -132,12 +145,11 @@ export default function LoginForm() {
             fontWeight: 600,
           }}
         >
-          Criar conta
+          Voltar para login
         </Link>
 
-        {error ? (
-          <p style={{ margin: 0, color: '#c00', fontSize: 14 }}>{error}</p>
-        ) : null}
+        {success ? <p style={{ margin: 0, color: '#15803d', fontSize: 14 }}>{success}</p> : null}
+        {error ? <p style={{ margin: 0, color: '#c00', fontSize: 14 }}>{error}</p> : null}
       </form>
     </section>
   );

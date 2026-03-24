@@ -49,13 +49,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/admin/:path*',
-    '/api/users/:path*',
-    '/api/incomes/:path*',
-    '/api/expenses/:path*',
-    '/api/reserves/:path*',
-    '/api/cards/:path*',
-    '/api/reports/:path*',
+    //'/dashboard/:path*',
+    //'/admin/:path*',
+    //'/api/users/:path*',
+    //'/api/incomes/:path*',
+    //'/api/expenses/:path*',
+    //'/api/reserves/:path*',
+    //'/api/cards/:path*',
+    //'/api/reports/:path*',
   ],
 };

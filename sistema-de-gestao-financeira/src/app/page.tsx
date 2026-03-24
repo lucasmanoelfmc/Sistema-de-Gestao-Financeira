@@ -9,10 +9,13 @@ export default function HomePage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
 
+    /*
     if (token) {
       router.replace('/dashboard');
       return;
     }
+    */
+    
 
     router.replace('/login');
   }, [router]);
