@@ -186,14 +186,6 @@ export default function MyReserves() {
         <ExportDataButton fileBaseName="reservas" title="Exportação de Reservas" rows={exportRows} />
       </header>
 
-      <label htmlFor="reserve-user-id">User ID</label>
-      <input
-        id="reserve-user-id"
-        value={userId}
-        onChange={(event) => setUserId(event.target.value)}
-        placeholder="Informe o userId"
-      />
-
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
         <input
           type="number"

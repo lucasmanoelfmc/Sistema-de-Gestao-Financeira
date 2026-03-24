@@ -171,13 +171,8 @@ export default function ExpensesManager() {
         <ExportDataButton fileBaseName="despesas" title="Exportação de Despesas" rows={exportRows} />
       </header>
 
-      <label htmlFor="expense-user-id">User ID</label>
-      <input
-        id="expense-user-id"
-        value={userId}
-        onChange={(event) => setUserId(event.target.value)}
-        placeholder="Informe o userId"
-      />
+
+      
 
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
         <input

@@ -161,14 +161,6 @@ export default function IncomesManager() {
         <ExportDataButton fileBaseName="rendas" title="Exportação de Rendas" rows={exportRows} />
       </header>
 
-      <label htmlFor="income-user-id">User ID</label>
-      <input
-        id="income-user-id"
-        value={userId}
-        onChange={(event) => setUserId(event.target.value)}
-        placeholder="Informe o userId"
-      />
-
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
         <input
           value={form.description}

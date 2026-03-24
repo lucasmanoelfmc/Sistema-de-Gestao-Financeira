@@ -201,14 +201,6 @@ export default function InstallmentsManager() {
         <ExportDataButton fileBaseName="parcelamentos" title="Exportação de Parcelamentos" rows={exportRows} />
       </header>
 
-      <label htmlFor="installments-user-id">User ID</label>
-      <input
-        id="installments-user-id"
-        value={userId}
-        onChange={(event) => setUserId(event.target.value)}
-        placeholder="Informe o userId"
-      />
-
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 10 }}>
         <select
           value={form.card}

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -11,6 +14,14 @@ const links = [
 ];
 
 export default function AppTopbar() {
+  const router = useRouter();
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    router.push('/login');
+  }
+
   return (
     <nav
       style={{
@@ -40,6 +51,23 @@ export default function AppTopbar() {
           {link.label}
         </Link>
       ))}
+
+      <button
+        type="button"
+        onClick={handleLogout}
+        style={{
+          marginLeft: 'auto',
+          padding: '8px 12px',
+          borderRadius: 10,
+          border: '1px solid #b91c1c',
+          backgroundColor: '#dc2626',
+          color: '#fff',
+          fontWeight: 700,
+          cursor: 'pointer',
+        }}
+      >
+        Sair
+      </button>
     </nav>
   );
 }

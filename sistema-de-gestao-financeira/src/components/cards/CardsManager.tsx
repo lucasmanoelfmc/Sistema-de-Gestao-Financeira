@@ -153,14 +153,6 @@ export default function CardsManager() {
         <ExportDataButton fileBaseName="contas-cartoes" title="Exportação de Contas/Cartões" rows={exportRows} />
       </header>
 
-      <label htmlFor="cards-user-id">User ID</label>
-      <input
-        id="cards-user-id"
-        value={userId}
-        onChange={(event) => setUserId(event.target.value)}
-        placeholder="Informe o userId"
-      />
-
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 10 }}>
         <input
           value={form.name}

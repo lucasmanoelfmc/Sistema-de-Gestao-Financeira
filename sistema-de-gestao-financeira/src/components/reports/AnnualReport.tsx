@@ -114,15 +114,7 @@ export default function AnnualReport() {
       </header>
 
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(2, minmax(220px, 1fr))' }}>
-        <div>
-          <label htmlFor="annual-user-id">User ID</label>
-          <input
-            id="annual-user-id"
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-            placeholder="Informe o userId"
-          />
-        </div>
+        
         <div>
           <label htmlFor="annual-year">Ano</label>
           <input
@@ -134,10 +126,6 @@ export default function AnnualReport() {
           />
         </div>
       </div>
-
-      <button type="button" onClick={() => void loadReport(year, userId)} disabled={loading || !userId || !year}>
-        Atualizar relatório
-      </button>
 
       {error ? <p style={{ color: '#c00' }}>{error}</p> : null}
       {loading ? <p>Carregando...</p> : null}
